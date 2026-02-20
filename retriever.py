@@ -14,11 +14,12 @@ class Retriever:
 
         query_lower = query.lower()
 
+        # For list queries, use more documents but cap at reasonable limit
         if any(word in query_lower for word in ["list", "all", "show", "give me all"]):
-            return min(200, TOP_K * 4)  # Use more for list queries but respect config
+            return min(TOP_K * 2, 100)  # Cap at 100 instead of 200
 
         if any(word in query_lower for word in ["how many", "count", "total"]):
-            return min(200, TOP_K * 4)
+            return min(TOP_K * 2, 100)
 
         return TOP_K
 
