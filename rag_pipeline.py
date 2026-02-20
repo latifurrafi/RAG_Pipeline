@@ -64,7 +64,15 @@ class RAGPipeline:
 
         retrieved_docs = self.retriever.retrieve(query)
 
-        context = "\n\n".join(retrieved_docs)
+        if not retrieved_docs:
+            return "I couldn't find any relevant information matching your query. Please try rephrasing your question or using different keywords."
+
+        # Format context with clear separators
+        context_parts = []
+        for i, doc in enumerate(retrieved_docs, 1):
+            context_parts.append(f"[Document {i}]\n{doc}")
+        
+        context = "\n\n" + "="*50 + "\n\n".join(context_parts)
 
         answer = self.llm.generate(context, query)
 

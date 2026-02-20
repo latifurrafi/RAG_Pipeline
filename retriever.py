@@ -1,5 +1,8 @@
 # retriever.py
 
+from config import TOP_K, SIMILARITY_THRESHOLD
+
+
 class Retriever:
 
     def __init__(self, vector_store, embedder):
@@ -9,17 +12,20 @@ class Retriever:
 
     def get_top_k(self, query):
 
-        query = query.lower()
+        query_lower = query.lower()
 
-        if any(word in query for word in ["list", "all", "show", "give me all"]):
-            return 200
+        if any(word in query_lower for word in ["list", "all", "show", "give me all"]):
+            return min(200, TOP_K * 4)  # Use more for list queries but respect config
 
-        if any(word in query for word in ["how many", "count", "total"]):
-            return 200
+        if any(word in query_lower for word in ["how many", "count", "total"]):
+            return min(200, TOP_K * 4)
 
-        return 5
+        return TOP_K
 
-    def retrieve(self, query):
+    def retrieve(self, query, similarity_threshold=None):
+
+        if similarity_threshold is None:
+            similarity_threshold = SIMILARITY_THRESHOLD
 
         top_k = self.get_top_k(query)
 
@@ -27,7 +33,9 @@ class Retriever:
 
         results = self.vector_store.search(
             query_embedding,
-            top_k
+            top_k,
+            similarity_threshold
         )
 
-        return results
+        # Return just the documents (backward compatible)
+        return [r['document'] for r in results]
